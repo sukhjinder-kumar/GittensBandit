@@ -45,7 +45,7 @@
 
 For each algorithm, we have the following approx following interface -
 
-```
+```python
 class Strategy():
     def __init__(self, name):
         super().__int__("Strategy", self)
