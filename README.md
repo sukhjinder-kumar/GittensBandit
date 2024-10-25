@@ -62,4 +62,4 @@ class Strategy():
 Some algorithms (like Reinforce) might output a probability distribution for to-select action, which is required for update. Also, similarly for update it requires future knowledge (cummulative reward) to update there internal state.
 
 > [!Note]
-> Use `super().__int__(name, self)` to call `init` function of interface class and not rewrite that line and have one hanging instance of self.name. Maybe
+> Use `super().__init__(name, self)` to call `init` function of interface class and not rewrite that line and have one hanging instance of self.name. Maybe
