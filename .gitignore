@@ -1,0 +1,67 @@
+# ignore hidden files (except .git)
+.*
+!.gitignore
+
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Python dependencies
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+env/
+
+# Java dependencies
+*.class
+target/
+build/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows system files
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# IDE-specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Backup and temporary files
+*.swp
+*.bak
+*.tmp
+*.old
+
+# Compiled files and executables
+*.o
+*.out
+*.exe
+*.dll
+*.so
+
+# Jekyll site files
+_site/
+
+# LaTeX temporary files
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+
