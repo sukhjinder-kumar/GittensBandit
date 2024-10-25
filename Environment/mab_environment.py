@@ -32,22 +32,22 @@ class MAB():
 
         initial_start_state : np.array((num_arms)) : initial states of each arm
         '''
-        self.K = num_arms  # number of markovian machines
-        self.N = num_states_per_arm  # number of states in markovian machine
-        self.machines = np.empty(self.K, dtype=object)  # list of MP class objects
+        self.k = num_arms  # number of markovian machines
+        self.n = num_states_per_arm  # number of states in markovian machine
+        self.machines = np.empty(self.k, dtype=object)  # list of MP class objects
         self.homogeneous = homogeneous
         if initial_start_state is None:
-            self.initial_start_state = np.random.choice(self.N, self.K) 
+            self.initial_start_state = np.random.choice(self.n, self.k) 
         else:
             self.initial_start_state = initial_start_state
-        for i in range(self.K):
+        for i in range(self.k):
             if homogeneous:
-                machine = MP(num_states = self.N, 
+                machine = MP(num_states = self.n, 
                              transition_matrix = transition_matrices,
                              reward_matrix = reward_matrices,
                              start_state=self.initial_start_state[i])
             else:
-                machine = MP(num_states = self.N, 
+                machine = MP(num_states = self.n, 
                              transition_matrix = transition_matrices[i],
                              reward_matrix = reward_matrices[i],
                              start_state=self.initial_start_state[i])
@@ -70,7 +70,7 @@ class MAB():
                 machine.reset()
         else:
             for machine in self.machines:
-                machine.current_state = int(np.random.choice(self.N))
+                machine.current_state = int(np.random.choice(self.n))
 
 
 if __name__ == "__main__":
@@ -82,3 +82,5 @@ if __name__ == "__main__":
               homogeneous=test2.homogeneous)
     print(mab.step(1))
     print(mab.homogeneous)
+    mab.reset(random=True)
+    print(mab.get_cur_states())
