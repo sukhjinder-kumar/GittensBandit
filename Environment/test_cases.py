@@ -125,5 +125,4 @@ test3 = TestCases(num_arms=num_arms_test_3,
 
 
 if __name__ == "__main__":
-    for row_idx in range(10):
-        print(sum(tms_test_3[row_idx,:]))
+    print(test3.initial_start_state) 

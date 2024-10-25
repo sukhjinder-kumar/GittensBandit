@@ -2,10 +2,10 @@ from typing import Union
 import numpy as np
 from numpy import ndarray
 from Environment.test_cases import test2
-from Environment.mp_environment import MP
+from Environment.mp_environment import Mp
 
 
-class MAB():
+class Mab():
     def __init__(self,
                  num_arms, 
                  num_states_per_arm, 
@@ -42,12 +42,12 @@ class MAB():
             self.initial_start_state = initial_start_state
         for i in range(self.k):
             if homogeneous:
-                machine = MP(num_states = self.n, 
+                machine = Mp(num_states = self.n, 
                              transition_matrix = transition_matrices,
                              reward_matrix = reward_matrices,
                              start_state=self.initial_start_state[i])
             else:
-                machine = MP(num_states = self.n, 
+                machine = Mp(num_states = self.n, 
                              transition_matrix = transition_matrices[i],
                              reward_matrix = reward_matrices[i],
                              start_state=self.initial_start_state[i])
@@ -74,7 +74,7 @@ class MAB():
 
 
 if __name__ == "__main__":
-    mab = MAB(num_arms = test2.num_arms,  
+    mab = Mab(num_arms = test2.num_arms,  
               num_states_per_arm = test2.num_states_per_arm,
               transition_matrices = test2.transition_matrices,
               reward_matrices = test2.reward_matrices,

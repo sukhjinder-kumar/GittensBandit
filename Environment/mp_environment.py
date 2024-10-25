@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class MP:  # markovian process
+class Mp():  # markovian process
     def __init__(self,
                  num_states,
                  transition_matrix,
