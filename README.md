@@ -21,6 +21,26 @@
 
 3. Base Folder names like "Strategies", "Scripts", etc, all our plural.
 
+4. Use numpy arrays for all array related tasks
+
+    - `np.array(init_array, dtype=int | float | object)` for init known array or `np.zeros(shape, dtype = int | float | object)` for init 2x3 numpy array. Thinking C, each index in axis = 0, i.e. of size 2, has a pointer to an array of size 3.
+
+        - `np.empty(shape, dtype = int | float | object)`
+
+    - To insert just use `a[i][j]`, where first indexing is for first axis, and so on.
+
+    - Note to copy, use `a = b.copy()` where we are trying to copy array b into array a. Make sure they have same size
+
+5. Use numpy for generating random numbers. Use `np.random.choice(space, p, size)` -
+
+    - Where space can be int (than sample from range(int)) or a list. 
+
+    - `p` is weighed probabilities
+
+    - `size` is number of samples
+
+    - if `p` is not present, uniform distribution assumed. If `size` not present, outputs np.int (or float) object otherwise a numpy array. If we use int option and nothing else, outputs is int class. To be safe always add a wrapper for type conversion.
+
 ## API interface
 
 For each algorithm, we have the following approx following interface -
