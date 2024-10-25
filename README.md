@@ -48,7 +48,6 @@ For each algorithm, we have the following approx following interface -
 ```python
 class Strategy():
     def __init__(self, name):
-        super().__int__("Strategy", self)
         self.name = "Strategy"
     def get_action(self, cur_state):
         # cur_state : np.array((k)) : ith element tells state of ith arm
@@ -61,3 +60,6 @@ class Strategy():
 ```
 
 Some algorithms (like Reinforce) might output a probability distribution for to-select action, which is required for update. Also, similarly for update it requires future knowledge (cummulative reward) to update there internal state.
+
+> [!Note]
+> Use `super().__int__(name, self)` to call `init` function of interface class and not rewrite that line and have one hanging instance of self.name. Maybe
