@@ -31,7 +31,7 @@ for num_run in tqdm(range(num_runs), unit=" #Run"):
         qlearning.reset()
         
         for epoch in range(num_epochs):
-                cur_states = mab.get_cur_states()
+                cur_states = mab.get_cur_state()
                 cur_action, _ = qlearning.get_action(cur_states)
                 next_state, cur_reward = mab.step(cur_action)
                 qlearning.update(cur_states[cur_action], cur_action, cur_reward, next_state)

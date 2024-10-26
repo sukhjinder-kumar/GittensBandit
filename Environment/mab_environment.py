@@ -61,8 +61,8 @@ class Mab():
         next_machine_state, reward = self.machines[selected_arm].step()  # type: ignore
         return next_machine_state, reward
 
-    def get_cur_states(self):
-        return np.array([machine.current_state for machine in self.machines])
+    def get_cur_state(self):
+        return np.array([machine.current_state for machine in self.machines], dtype=int)
         
     def reset(self, random=False):
         if not random:
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     print(mab.step(1))
     print(mab.homogeneous)
     mab.reset(random=True)
-    print(mab.get_cur_states())
+    print(mab.get_cur_state())
