@@ -88,8 +88,20 @@ class Reinforce(StrategyInterface):
         else:
             self.h = np.zeros((self.k, self.n))  # preference for each (k, n), i.e. kth arm and nth state
 
-    def visualize_h_average(self, h_average, homogeneous, title, savepath):
-        if not homogeneous:
+    def visualize_h_average(self, h_average, title, savepath):
+        if self.homogeneous:
+            # Plot all n variables on the same figure
+            for i in range(self.n):
+                plt.plot(h_average[:, i], label=f'h[{i}]')
+                plt.text(h_average.shape[0]-1, h_average[:, i][-1], f'({i})', 
+                         fontsize=8, verticalalignment='bottom', horizontalalignment='left')
+            plt.legend()
+            plt.xlabel("episode")
+            plt.ylabel("preference")
+            plt.title(title)
+            plt.savefig(savepath)
+            plt.show()
+        else:
             # Plot all k x n variables on the same figure
             for i in range(self.k):
                 for j in range(self.n):
