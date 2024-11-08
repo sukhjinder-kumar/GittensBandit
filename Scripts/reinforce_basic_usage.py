@@ -2,15 +2,18 @@ import numpy as np
 from Environment.test_cases import test1, test2, test3
 from Environment.mab_environment import Mab
 from Strategies.reinforce import Reinforce
+from Utils.cal_optimal_rewrad import calculate_optimal_reward
+from Utils.regret_calculation import calculate_regret, plot_regret_history_average, plot_cumm_regret_average
 from tqdm import tqdm
 
 num_epochs = 10000
 episode_len = 20
-num_runs = 2
+num_runs = 100
 learning_rate = 0.001
-temperature = 1
-test = test3
-test_string = "test3"
+temperature = 200
+test = test1
+test_string = "test1"
+schedule = "linear"
 
 mab = Mab(num_arms = test.num_arms,
           num_states_per_arm = test.num_states_per_arm,
@@ -25,7 +28,12 @@ reinforce = Reinforce(num_arms = test.num_arms,
                       discount_factor = test.discount_factor,
                       episode_len = episode_len, 
                       learning_rate = learning_rate,
-                      temperature = temperature)
+                      temperature = temperature,
+                      schedule = schedule)
+
+optimal_reward = calculate_optimal_reward(test, mab, episode_len)
+regret_history = np.zeros((num_runs, num_epochs))
+cumm_regret = np.zeros((num_epochs))
 
 # Code for homogeneous
 if mab.homogeneous:
@@ -70,6 +78,9 @@ if mab.homogeneous:
             # update h_history
             h_history[run, epoch] = reinforce.h.copy()
 
+            # calculate regret
+            regret_history[run][epoch] = calculate_regret(mab, reinforce, episode_len, optimal_reward, test.discount_factor)
+
 # Code for non-homogeneous
 else:
     h_history = np.zeros((num_runs, num_epochs, mab.k, mab.n))
@@ -113,9 +124,28 @@ else:
             # update h_history
             h_history[run, epoch] = reinforce.h.copy()
 
+            # calculate regret
+            regret_history[run][epoch] = calculate_regret(mab, reinforce, episode_len, optimal_reward, test.discount_factor)
+
 h_average = np.mean(h_history, axis=0)  # shape: (num_episode, k, n)
 title = f"Average Preference vs episode, num_epochs: {num_epochs} and num_runs: {num_runs}"
-savepath = f"Results/Reinforce/{test_string}_num_epochs={num_epochs}_num_runs={num_runs}_lr={learning_rate}_episode_len={episode_len}.png"
+preference_savepath = f"Results/Reinforce/preference_plot_{test_string}_num_epochs={num_epochs}_num_runs={num_runs}_lr={learning_rate}_episode_len={episode_len}_temp={temperature}.png"
 reinforce.visualize_h_average(h_average,
                               title=title,
-                              savepath=savepath)
+                              savepath=preference_savepath)
+
+regret_history_average = np.mean(regret_history, axis=0)  # shape: (num_episodes)
+regret_savepath = f"Results/Reinforce/regret_plot_{test_string}_num_epochs={num_epochs}_num_runs={num_runs}_lr={learning_rate}_episode_len={episode_len}_temp={temperature}.png"
+plot_regret_history_average(regret_history_average,
+                            title=f"Average cumm regret over a episode_len={episode_len}",
+                            savepath=regret_savepath)
+
+cumm_regret_counter = 0
+for epoch in range(num_epochs):
+    cumm_regret_counter += regret_history_average[epoch]
+    cumm_regret[epoch] = cumm_regret_counter
+
+cumm_regret_savepath = f"Results/Reinforce/cumm_regret_plot_{test_string}_num_epochs={num_epochs}_num_runs={num_runs}_lr={learning_rate}_episode_len={episode_len}_temp={temperature}.png"
+plot_cumm_regret_average(cumm_regret,
+                         title=f"Average cummulative regret over a episode_len={episode_len}",
+                         savepath=regret_savepath)

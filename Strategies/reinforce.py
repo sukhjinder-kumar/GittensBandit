@@ -10,14 +10,24 @@ class Reinforce(StrategyInterface):
                  discount_factor, 
                  episode_len, 
                  learning_rate, 
-                 temperature):
+                 temperature,
+                 schedule=None):
         super().__init__("Reinforce")
         self.k = num_arms
         self.n = num_states_per_arm
         self.discount_factor = discount_factor
         self.episode_len = episode_len
         self.learning_rate = learning_rate
-        self.t = temperature  # Temperature
+
+        self.schedule = schedule
+        if self.schedule is None:
+            self.cur_temp = temperature
+        elif self.schedule == "linear":
+            self.max_temp = temperature  # Boltzmann temperature
+            self.min_temp = 0.5  # based on Barto et al 1991 (Appendix B)
+            self.cur_temp = self.max_temp  # cur_temp
+            self.beta = 0.992  # used to update cur_temp
+
         self.homogeneous = homogeneous
         if self.homogeneous:
             self.h = np.zeros((self.n))  # preference for each state
@@ -32,13 +42,13 @@ class Reinforce(StrategyInterface):
         action_probability = np.zeros((self.k))  # probability of selecting each arm
         
         if self.homogeneous:
-            total = sum([np.exp(self.h[cur_state[i]]/self.t) for i in range(self.k)])
+            total = sum([np.exp(self.h[cur_state[i]]/self.cur_temp) for i in range(self.k)])
             for i in range(self.k):
-                action_probability[i] = np.exp(self.h[cur_state[i]]/self.t) / total
+                action_probability[i] = np.exp(self.h[cur_state[i]]/self.cur_temp) / total
         else:
-            total = sum([np.exp(self.h[i][cur_state[i]]/self.t) for i in range(self.k)])
+            total = sum([np.exp(self.h[i][cur_state[i]]/self.cur_temp) for i in range(self.k)])
             for i in range(self.k):
-                action_probability[i] = np.exp(self.h[i][cur_state[i]]/self.t) / total
+                action_probability[i] = np.exp(self.h[i][cur_state[i]]/self.cur_temp) / total
 
         action = int(np.random.choice(range(self.k), p=action_probability))
 
@@ -58,13 +68,13 @@ class Reinforce(StrategyInterface):
                     self.h[cur_state[i]] += (self.learning_rate 
                                              * self.discount_factor**cur_time
                                              * cumm_reward 
-                                             * 1/self.t
+                                             * 1/self.cur_temp
                                              * (1 - action_probability[i]))
                 else:
                     self.h[cur_state[i]] += (self.learning_rate 
                                              * self.discount_factor**cur_time
                                              * cumm_reward
-                                             * 1/self.t
+                                             * 1/self.cur_temp
                                              * - action_probability[i])
         else:
             for i in range(self.k):
@@ -72,14 +82,18 @@ class Reinforce(StrategyInterface):
                     self.h[i][cur_state[i]] += (self.learning_rate 
                                                 * self.discount_factor**cur_time
                                                 * cumm_reward 
-                                                * 1/self.t
+                                                * 1/self.cur_temp
                                                 * (1 - action_probability[i]))
                 else:
                     self.h[i][cur_state[i]] += + (self.learning_rate 
                                                   * self.discount_factor**cur_time
                                                   * cumm_reward 
-                                                  * 1/self.t
+                                                  * 1/self.cur_temp
                                                   * - action_probability[i])
+        # decrease the temp if schedule is not None
+        if self.schedule == "linear":
+            self.cur_temp = self.min_temp + self.beta * (self.cur_temp - self.min_temp)
+
         return
 
     def reset(self):
@@ -87,6 +101,9 @@ class Reinforce(StrategyInterface):
             self.h = np.zeros((self.n))  # preference for each state
         else:
             self.h = np.zeros((self.k, self.n))  # preference for each (k, n), i.e. kth arm and nth state
+
+        if self.schedule == "linear":
+            self.cur_temp = self.max_temp
 
     def visualize_h_average(self, h_average, title, savepath):
         if self.homogeneous:
