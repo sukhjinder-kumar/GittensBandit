@@ -109,6 +109,7 @@ else:
             # update reinforce
             for t in range(episode_len):
                     nn_reinforce.update(cur_state=state_history[t],
+                                        next_state=None,
                                         action_taken=action_history[t],
                                         action_probability=action_probability_history[t],
                                         reward=reward_history[t], 

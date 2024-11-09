@@ -1,4 +1,7 @@
 import numpy as np
+from numpy import ndarray
+from typing import Union
+
 from Strategies.strategy_interface import StrategyInterface
 import matplotlib.pyplot as plt
 
@@ -56,11 +59,23 @@ class QLearning(StrategyInterface):
         
         return action, action_probabilities
 
-    def update(self, prev_state_of_selected_arm, cur_action, reward, cur_state_of_selected_arm):
-        i = prev_state_of_selected_arm
-        a = cur_action  # arm selected
+    def update(self, 
+              cur_state: ndarray, 
+              next_state: Union[int, None],
+              reward: float, 
+              action_taken: int, 
+              action_probability: Union[ndarray, None] = None,
+              cumm_reward: Union[float, None] = None,
+              cur_time: Union[int, None] = None) -> None:
+        # last 3 for lsp consistencies
+
+        if next_state is None:
+            raise Exception(f"{self.name} recieved wrong param, next_state, in update method")
+
+        i = cur_state  # prev_state_of_selected_arm
+        j = next_state  # cur_state_of_selected_arm, after transition state
+        a = action_taken  # arm selected
         r = reward
-        j = cur_state_of_selected_arm  # after transition state
 
         # sorry for the overload of k, here it means any state reached after taking action from i, to i from k.
         # don't confuse with self.k == num_arms, i-j-k seems more natural notation
@@ -102,7 +117,7 @@ class QLearning(StrategyInterface):
         if self.temperature_mode == "Boltzmann":
             self.cur_temp = self.max_temp
     
-    def qlearning_visualize(self, gittin_history, save_path):
+    def qlearning_visualize(self, gittin_history, title, save_path):
         num_runs, time_steps, num_arms, num_states_per_arm = gittin_history.shape
         
         for k in range(num_arms):
@@ -112,18 +127,15 @@ class QLearning(StrategyInterface):
                 
                 # Add index (k, n) as a text label above the line at the last time step
                 plt.text(time_steps - 1, values[-1], f'({k},{n})', 
-                                              fontsize=8, verticalalignment='bottom', horizontalalignment='left')
+                         fontsize=8, verticalalignment='bottom', horizontalalignment='left')
                 
-                # Add labels and title
-            plt.xlabel('Time')
+        # Add labels and title
+        plt.xlabel('Time')
         plt.ylabel('Gittins Index')
-        plt.title('Trajectory of Gittins index for Each (kth arm, nth state) state Over Time')
+        plt.title(title)
         
         # Show legend
         plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small', title='(k,n) Pairs')
-        
-        # Adjust layout to prevent overlap
-        plt.tight_layout(rect=[0, 0, 0.85, 1])
         
         # Save fig
         plt.savefig(save_path)

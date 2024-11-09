@@ -6,9 +6,9 @@ from Utils.regret_calculation import calculate_regret, plot_regret_history_avera
 import numpy as np
 from tqdm import tqdm
 
-num_epochs = 10000
+num_epochs = 10
 episode_len = 20
-num_runs = 100
+num_runs = 2
 test = test1
 test_string = "test1"
 init_learning_rate = 0.5
@@ -42,7 +42,7 @@ for run in tqdm(range(num_runs), unit=" #Run"):
             cur_states = mab.get_cur_state()
             cur_action, _ = qlearning.get_action(cur_states)
             next_state, cur_reward = mab.step(cur_action)
-            qlearning.update(cur_states[cur_action], cur_action, cur_reward, next_state)
+            qlearning.update(cur_states[cur_action], next_state, cur_reward, cur_action)
 
         # Store gittins
         for k in range(test.num_arms):
@@ -54,7 +54,7 @@ for run in tqdm(range(num_runs), unit=" #Run"):
 
 print("Training Finished!")
 save_path = f'Results/QLearning/{test_string}_gittin_plot_num_runs={num_runs}_time_steps={num_epochs}.png'
-qlearning.qlearning_visualize(gittin_history, save_path)
+qlearning.qlearning_visualize(gittin_history, "gittin plot", save_path)
 print("Plot saved")
 
 regret_history_average = np.mean(regret_history, axis=0)  # shape: (num_episodes)

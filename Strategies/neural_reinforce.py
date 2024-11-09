@@ -1,4 +1,7 @@
 import numpy as np
+from numpy import ndarray
+from typing import Union
+
 import torch
 import torch.nn as nn
 from torch.optim.adam import Adam
@@ -106,12 +109,21 @@ class NeuralReinforce(StrategyInterface):
         return action, action_probability
 
     def update(self, 
-               cur_state,
-               action_taken,
-               action_probability,
-               reward, 
-               cumm_reward,
-               cur_time):
+              cur_state: ndarray, 
+              next_state: Union[int, None],
+              reward: float, 
+              action_taken: int, 
+              action_probability: Union[ndarray, None],
+              cumm_reward: Union[float, None],
+              cur_time: Union[int, None]) -> None:
+
+        if action_probability is None:
+            raise Exception(f"{self.name} recieved wrong param, action_probability, in update method. Can't be None")
+        if cumm_reward is None:
+            raise Exception(f"{self.name} recieved wrong param, cumm_reward, in update method. Can't be None")
+        if cur_time is None:
+            raise Exception(f"{self.name} recieved wrong param, cur_time, in update method. Can't be None")
+
         # update preferences
         if self.homogeneous:
             self.optimizer.zero_grad()

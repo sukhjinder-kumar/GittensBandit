@@ -6,9 +6,9 @@ from Utils.cal_optimal_rewrad import calculate_optimal_reward
 from Utils.regret_calculation import calculate_regret, plot_regret_history_average, plot_cumm_regret_average
 from tqdm import tqdm
 
-num_epochs = 10000
+num_epochs = 2
 episode_len = 20
-num_runs = 100
+num_runs = 2
 learning_rate = 0.001
 temperature = 200
 test = test1
@@ -69,9 +69,10 @@ if mab.homogeneous:
             # update reinforce
             for t in range(episode_len):
                 reinforce.update(cur_state=state_history[t],
+                                 next_state=None,
+                                 reward=reward_history[t], 
                                  action_taken=action_history[t],
                                  action_probability=action_probability_history[t],
-                                 reward=reward_history[t], 
                                  cumm_reward=return_history[t],
                                  cur_time=t)
 
@@ -115,6 +116,7 @@ else:
             # update reinforce
             for t in range(episode_len):
                 reinforce.update(cur_state=state_history[t],
+                                 next_state=None,
                                  action_taken=action_history[t],
                                  action_probability=action_probability_history[t],
                                  reward=reward_history[t], 
@@ -148,4 +150,4 @@ for epoch in range(num_epochs):
 cumm_regret_savepath = f"Results/Reinforce/cumm_regret_plot_{test_string}_num_epochs={num_epochs}_num_runs={num_runs}_lr={learning_rate}_episode_len={episode_len}_temp={temperature}.png"
 plot_cumm_regret_average(cumm_regret,
                          title=f"Average cummulative regret over a episode_len={episode_len}",
-                         savepath=regret_savepath)
+                         savepath=cumm_regret_savepath)

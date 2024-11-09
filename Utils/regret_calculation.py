@@ -2,16 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def calculate_regret(mab, strategy, episode_len, optimal_reward, discount_factor):
-    cumm_reward = 0
-    # generate episode
-    mab.reset(random=True)
-    for t in range(episode_len):
-        cur_state = mab.get_cur_state()
-        action, action_probability = strategy.get_action(cur_state)
-        _, reward = mab.step(action)
-        cumm_reward += (discount_factor**t) * reward
+    num_runs = 20
+    cumm_reward = np.zeros((num_runs))
+    for run in range(num_runs):
+        mab.reset(random=False)
+        for t in range(episode_len):
+            cur_state = mab.get_cur_state()
+            action, action_probability = strategy.get_action(cur_state)
+            _, reward = mab.step(action)
+            cumm_reward[run] += (discount_factor**t) * reward
 
-    regret = cumm_reward - optimal_reward
+    regret = np.mean(cumm_reward, axis=0) - optimal_reward
     return regret
 
 def plot_regret_history_average(regret_history_average,
