@@ -33,7 +33,7 @@ def get_args():
                             help="temperature mode for qlearning algorithm", default="epsilon-greedy-gittin")
         parser.add_argument('--init_learning_rate', type=float, 
                             help="init learning rate for qlearning algorithm", default=0.05)
-        parser.add_argument('--not_show_gittin_plot', action='store_false', 
+        parser.add_argument('--not_show_gittin_plot', action='store_true', 
                             help="include to not show the gittins plot")
 
     # Reinforce Algorithm
@@ -44,12 +44,12 @@ def get_args():
                             help="schedule for temperature in reinforce algorithm", default="linear")
         parser.add_argument('--learning_rate', type=float, 
                             help="learning rate for reinforce algorithm", default=0.001)
-        parser.add_argument('--not_show_preference_plot', action='store_false', 
+        parser.add_argument('--not_show_preference_plot', action='store_true', 
                             help="include to not show the preference plot")
 
-    parser.add_argument('--not_show_regret_average_plot', action='store_false',
+    parser.add_argument('--not_show_regret_average_plot', action='store_true',
                         help="include to not show the average regret plot")
-    parser.add_argument('--not_show_cumm_regret_average_plot', action='store_false',
+    parser.add_argument('--not_show_cumm_regret_average_plot', action='store_true',
                         help="include to not show average cumm regret plot")
 
     # Save path

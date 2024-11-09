@@ -11,6 +11,7 @@ from Scripts.neural_reinforce_train import neural_reinforce_train
 
 # get argument from command line
 args = get_args()
+print(vars(args))
 
 # Init test case
 test = globals()[args.test_name]
