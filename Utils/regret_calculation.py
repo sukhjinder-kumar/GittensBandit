@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def calculate_regret(mab, strategy, episode_len, optimal_reward, discount_factor):
-    num_runs = 20
+    num_runs = 100
     cumm_reward = np.zeros((num_runs))
     for run in range(num_runs):
         mab.reset(random=False)

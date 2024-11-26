@@ -29,7 +29,10 @@ def get_args():
 
     # Q-Learning Algorithm
     if args.strategy_name == "QLearning":
-        parser.add_argument('--temperature_mode', type=str, 
+        allowed_temperature_mode = ["Boltzmann", "epsilon-greedy-gittin"]
+        parser.add_argument('--temperature', type=int, 
+                            help="temperature for qlearning algorithm", default=200)
+        parser.add_argument('--temperature_mode', type=str, choices=allowed_temperature_mode,
                             help="temperature mode for qlearning algorithm", default="epsilon-greedy-gittin")
         parser.add_argument('--init_learning_rate', type=float, 
                             help="init learning rate for qlearning algorithm", default=0.05)
@@ -40,7 +43,20 @@ def get_args():
     if args.strategy_name == "Reinforce":
         parser.add_argument('--temperature', type=int, 
                             help="temperature for reinforce algorithm", default=1)
-        parser.add_argument('--schedule', type=str, 
+        allowed_schedules = ["none", "linear"]
+        parser.add_argument('--schedule', type=str, choices=allowed_schedules,
+                            help="schedule for temperature in reinforce algorithm", default="linear")
+        parser.add_argument('--learning_rate', type=float, 
+                            help="learning rate for reinforce algorithm", default=0.001)
+        parser.add_argument('--not_show_preference_plot', action='store_true', 
+                            help="include to not show the preference plot")
+
+    # Neural Reinforce Algorithm
+    if args.strategy_name == "NeuralReinforce":
+        parser.add_argument('--temperature', type=int, 
+                            help="temperature for reinforce algorithm", default=1)
+        allowed_schedules = ["linear"]
+        parser.add_argument('--schedule', type=str, choices=allowed_schedules,
                             help="schedule for temperature in reinforce algorithm", default="linear")
         parser.add_argument('--learning_rate', type=float, 
                             help="learning rate for reinforce algorithm", default=0.001)

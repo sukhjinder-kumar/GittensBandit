@@ -14,7 +14,7 @@ class Reinforce(StrategyInterface):
                  episode_len, 
                  learning_rate, 
                  temperature,
-                 schedule=None):
+                 schedule="none"):
         super().__init__("Reinforce")
         self.k = num_arms
         self.n = num_states_per_arm
@@ -23,7 +23,7 @@ class Reinforce(StrategyInterface):
         self.learning_rate = learning_rate
 
         self.schedule = schedule
-        if self.schedule is None:
+        if self.schedule == "none":
             self.cur_temp = temperature
         elif self.schedule == "linear":
             self.max_temp = temperature  # Boltzmann temperature

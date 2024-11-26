@@ -116,7 +116,7 @@ test2 = TestCases(num_arms=num_arms_test_2,
 num_arms_test_3 = 2
 num_states_per_arm_test_3 = 10
 discount_factor_test_3 = 0.9
-initial_start_state_test_3 = np.zeros((2))
+initial_start_state_test_3 = np.array([0, 0], dtype=int)
 ranking_test_3 = {
     (0) : 1,
     (3) : 2,

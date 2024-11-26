@@ -65,7 +65,7 @@ class NeuralReinforce(StrategyInterface):
                  episode_len, 
                  learning_rate,
                  max_temperature, 
-                 schedule):
+                 schedule="linear"):
         super().__init__("NeuralReinforce")
         self.k = num_arms
         self.n = num_states_per_arm

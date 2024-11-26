@@ -11,7 +11,8 @@ class QLearning(StrategyInterface):
                  num_states_per_arm, 
                  init_learning_rate, 
                  discount_factor, 
-                 temperature_mode):
+                 temperature=200,
+                 temperature_mode="epsilon-greedy-gittin"):
         super().__init__("QLearning")
         self.k = num_arms  # Number of arms (tasks)
         self.n = num_states_per_arm  # Number of states per task
@@ -27,7 +28,7 @@ class QLearning(StrategyInterface):
         
         self.temperature_mode = temperature_mode
         if temperature_mode == "Boltzmann":
-            self.max_temp = 200  # Boltzmann temperature
+            self.max_temp = temperature  # Boltzmann temperature
             self.min_temp = 0.5  # based on Barto et al 1991 (Appendix B)
             self.cur_temp = self.max_temp
             self.beta = 0.992  # used to update cur_temp

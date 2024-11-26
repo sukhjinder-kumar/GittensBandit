@@ -1,7 +1,7 @@
 import numpy as np
 
 def calculate_optimal_reward(test, mab, episode_len):
-    num_runs = 20
+    num_runs = 100
     optimal_reward = np.zeros((num_runs))
     for run in range(num_runs):    
         mab.reset(random=False)

@@ -15,7 +15,7 @@ def neural_reinforce_train(args,
                                    discount_factor = test.discount_factor,
                                    episode_len = args.episode_len, 
                                    learning_rate = args.learning_rate,
-                                   max_temperature = args.max_temperature,
+                                   max_temperature = args.temperature,
                                    schedule="linear")
 
     if mab.homogeneous:  # Code for homogeneous

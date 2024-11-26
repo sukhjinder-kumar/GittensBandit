@@ -9,13 +9,19 @@ def qlearning_train(args,
                     optimal_reward,
                     regret_history):
 
-    qlearning = QLearning(num_arms = test.num_arms, 
+    if mab.homogeneous:
+        num_arms = 1
+    else:
+        num_arms = test.num_arms
+
+    qlearning = QLearning(num_arms = num_arms, 
                           num_states_per_arm = test.num_states_per_arm,
                           init_learning_rate = args.init_learning_rate,
                           discount_factor = test.discount_factor, 
-                          temperature_mode = "epsilon-greedy-gittin")
+                          temperature = args.temperature,
+                          temperature_mode = args.temperature_mode)
 
-    gittin_history = np.zeros((args.num_runs, args.num_epochs, test.num_arms, test.num_states_per_arm))
+    gittin_history = np.zeros((args.num_runs, args.num_epochs, num_arms, test.num_states_per_arm))
 
     for run in tqdm(range(args.num_runs), unit=" #Run"):
         qlearning.reset()
@@ -32,7 +38,7 @@ def qlearning_train(args,
                                  cur_action)
 
             # Store gittins
-            for k in range(test.num_arms):
+            for k in range(num_arms):
                 for n in range(test.num_states_per_arm):
                     gittin_history[run, epoch, k, n] = qlearning.q_table[n, 0, n, k]
 

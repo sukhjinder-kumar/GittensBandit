@@ -1,0 +1,14 @@
+{
+    "strategy_name": "NeuralReinforce",
+    "test_name": "test2",
+    "num_runs": 10,
+    "num_epochs": 20,
+    "episode_len": 20,
+    "temperature": 200,
+    "schedule": "linear",
+    "learning_rate": 0.001,
+    "not_show_preference_plot": false,
+    "not_show_regret_average_plot": false,
+    "not_show_cumm_regret_average_plot": false,
+    "savepath": "Results/NeuralReinforce/2024-11-09_13:56:55"
+}

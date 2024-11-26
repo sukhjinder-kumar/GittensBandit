@@ -1,0 +1,14 @@
+{
+    "strategy_name": "QLearning",
+    "test_name": "test1",
+    "num_runs": 100,
+    "num_epochs": 5000,
+    "episode_len": 20,
+    "temperature": 200,
+    "temperature_mode": "epsilon-greedy-gittin",
+    "init_learning_rate": 0.05,
+    "not_show_gittin_plot": false,
+    "not_show_regret_average_plot": false,
+    "not_show_cumm_regret_average_plot": false,
+    "savepath": "Results/QLearning/2024-11-09_16:12:32"
+}
