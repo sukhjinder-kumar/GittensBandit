@@ -29,15 +29,31 @@ def get_args():
 
     # Q-Learning Algorithm
     if args.strategy_name == "QLearning":
-        allowed_temperature_mode = ["Boltzmann", "epsilon-greedy-gittin"]
-        parser.add_argument('--temperature', type=int, 
-                            help="temperature for qlearning algorithm", default=200)
-        parser.add_argument('--temperature_mode', type=str, choices=allowed_temperature_mode,
-                            help="temperature mode for qlearning algorithm", default="epsilon-greedy-gittin")
+        # Common
         parser.add_argument('--init_learning_rate', type=float, 
                             help="init learning rate for qlearning algorithm", default=0.05)
+        parser.add_argument('--tau', type=float, 
+                            help="tau for QLearning", default=300)
         parser.add_argument('--not_show_gittin_plot', action='store_true', 
                             help="include to not show the gittins plot")
+
+        allowed_schedule = ["Boltzmann", "epsilon-greedy"]
+        parser.add_argument('--schedule', type=str, choices=allowed_schedule,
+                            help="schedule for qlearning algorithm", default="epsilon-greedy-gittin")
+
+        args_, remaining_argv_ = parser.parse_known_args()
+
+        if args_.schedule == "Boltzmann":
+            parser.add_argument('--max_temperature', type=int, 
+                                help="max temperature for qlearning algorithm", default=200)
+            parser.add_argument('--min_temperature', type=float, 
+                                help="min temperature for qlearning algorithm", default=0.05)
+            parser.add_argument('--beta', type=float, 
+                                help="beta for Boltzmann schedule for qlearning algorithm", default=0.992)
+
+        if args_.schedule == "epsilon-greedy":
+            parser.add_argument('--epsilon_greedy', type=float,
+                                help="epsilon for epsilon greedy schedule", default=0.1)
 
     # Reinforce Algorithm
     if args.strategy_name == "Reinforce":

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Annotated
 import numpy as np
 from numpy import ndarray
 from Environment.test_cases import test2
@@ -7,12 +7,12 @@ from Environment.mp_environment import Mp
 
 class Mab():
     def __init__(self,
-                 num_arms, 
-                 num_states_per_arm, 
-                 transition_matrices, 
-                 reward_matrices, 
-                 homogeneous,
-                 initial_start_state: Union[ndarray, None] = None):
+                 num_arms: int, 
+                 num_states_per_arm: int, 
+                 transition_matrices: ndarray, 
+                 reward_matrices: ndarray, 
+                 homogeneous: bool,
+                 initial_start_state: Union[Annotated[ndarray, int], None] = None):
         '''
         If homogeneous == True
 
@@ -53,7 +53,7 @@ class Mab():
                              start_state=self.initial_start_state[i])
             self.machines[i] = machine
 
-    def step(self, selected_arm):  
+    def step(self, selected_arm: int):  
         '''
         input: action - which machine in [0, 1, ... , self.K-1] to select
         returns: reward
@@ -64,7 +64,7 @@ class Mab():
     def get_cur_state(self):
         return np.array([machine.current_state for machine in self.machines], dtype=int)
         
-    def reset(self, random=False):
+    def reset(self, random: bool =False):
         if not random:
             for machine in self.machines:
                 machine.reset()

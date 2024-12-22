@@ -1,19 +1,26 @@
 import numpy as np
 from numpy import ndarray
-from typing import Union
+from typing import Union, Annotated
 
 from Strategies.strategy_interface import StrategyInterface
 import matplotlib.pyplot as plt
+
 
 class QLearning(StrategyInterface):
     def __init__(self, 
                  num_arms,
                  num_states_per_arm, 
-                 init_learning_rate, 
                  discount_factor, 
-                 temperature=200,
-                 temperature_mode="epsilon-greedy-gittin"):
+                 init_learning_rate, 
+                 tau,
+                 schedule,
+                 max_temperature=None,
+                 min_temperature=None,
+                 beta=None,
+                 epsilon_greedy=None):
+
         super().__init__("QLearning")
+
         self.k = num_arms  # Number of arms (tasks)
         self.n = num_states_per_arm  # Number of states per task
         self.discount_factor = discount_factor
@@ -21,24 +28,29 @@ class QLearning(StrategyInterface):
         # Initialize the Q-table: (cur_state, action, restart_state, task)
         self.q_table = np.zeros((self.n, 2, self.n, self.k))  # Actions: 0 = Continue (C), 1 = Restart (R)
         self.num_updates_q_table = np.zeros((self.n, 2, self.n, self.k))  # stores how many updates for each q value have been performed
-     
-        self.init_learning_rate = init_learning_rate  # adaptive learning rate based on Barto et al 1991 (Appendix B)
-        self.cur_learning_rate = np.full((self.n, 2, self.n, self.k), self.init_learning_rate)  # lr for each q value in the Q table
-        self.tau = 300  # used in updating cur_learning_rate
-        
-        self.temperature_mode = temperature_mode
-        if temperature_mode == "Boltzmann":
-            self.max_temp = temperature  # Boltzmann temperature
-            self.min_temp = 0.5  # based on Barto et al 1991 (Appendix B)
-            self.cur_temp = self.max_temp
-            self.beta = 0.992  # used to update cur_temp
-        elif temperature_mode == "epsilon-greedy-gittin":
-            self.epsilon_greedy = 0.1  # probability of picking action at random
 
-    def get_action(self, cur_state):
+        # adaptive learning rate based on Barto et al 1991 (Appendix B)
+        self.init_learning_rate = init_learning_rate  
+        self.cur_learning_rate = np.full((self.n, 2, self.n, self.k), self.init_learning_rate)  # lr for each q value in the Q table
+        self.tau = tau  # used in updating cur_learning_rate (default = 300)
+        
+        self.schedule = schedule
+        if schedule == "Boltzmann":
+            if any(x is None for x in (max_temperature, min_temperature, beta)):
+                raise Exception("For Boltzmann schedule, temperature can't be None")
+            self.max_temp = max_temperature  # Boltzmann temperature (default = 200)
+            self.min_temp = min_temperature  # based on Barto et al 1991 (Appendix B, default = 0.5)
+            self.cur_temp = self.max_temp
+            self.beta = beta  # used to update cur_temp (default = 0.992)
+        elif schedule == "epsilon-greedy":
+            if epsilon_greedy is None:
+                raise Exception("For epsilon-greedy schedule, epsilon can't be None")
+            self.epsilon_greedy = epsilon_greedy  # probability of picking action at random
+
+    def get_action(self, cur_state: Annotated[ndarray, int]) -> tuple[int, Annotated[ndarray, float]]:
         action_probabilities = np.zeros((self.k))
 
-        if self.temperature_mode == "Boltzmann":
+        if self.schedule == "Boltzmann":
             # Calculate the Boltzmann distribution for action selection based on current estimate of gittins index
             action_probabilities = np.zeros((self.k))
             total = 0
@@ -47,7 +59,7 @@ class QLearning(StrategyInterface):
             for i in range(self.k):
                 action_probabilities[i] = np.exp(self.q_table[cur_state[i], 0, cur_state[i], i] / self.cur_temp) / total
                 
-        elif self.temperature_mode == "epsilon-greedy-gittin":
+        elif self.schedule == "epsilon-greedy-gittin":
             # With 1-epsilon probability pick the arm with the state that has highest gitten value
             # ,And with prob epsilon pick randomly
             cur_gittens = np.array([self.q_table[cur_state[i], 0, cur_state[i], i] for i in range(self.k)])
@@ -60,20 +72,15 @@ class QLearning(StrategyInterface):
         
         return action, action_probabilities
 
-    def update(self, 
-              cur_state: ndarray, 
-              next_state: Union[int, None],
-              reward: float, 
-              action_taken: int, 
-              action_probability: Union[ndarray, None] = None,
-              cumm_reward: Union[float, None] = None,
-              cur_time: Union[int, None] = None) -> None:
-        # last 3 for lsp consistencies
+    def short_term_update(self,
+                          cur_state: Annotated[ndarray, int],
+                          next_state: int,
+                          reward: float,
+                          action_taken: int,
+                          action_probability: Annotated[ndarray, float],
+                          cur_time: int) -> None:
 
-        if next_state is None:
-            raise Exception(f"{self.name} recieved wrong param, next_state, in update method")
-
-        i = cur_state  # prev_state_of_selected_arm
+        i = cur_state[action_taken]  # prev_state_of_selected_arm
         j = next_state  # cur_state_of_selected_arm, after transition state
         a = action_taken  # arm selected
         r = reward
@@ -108,14 +115,24 @@ class QLearning(StrategyInterface):
             self.cur_learning_rate[k, 1, i, a] = (self.init_learning_rate * self.tau) / (self.tau + self.num_updates_q_table[k, 1, i, a]) 
 
         # decrease the temperature
-        if self.temperature_mode == "Boltzmann":
+        if self.schedule == "Boltzmann":
             self.cur_temp = self.min_temp + self.beta * (self.cur_temp - self.min_temp)
+
+
+    def long_term_update(self,
+                         state_history: Annotated[ndarray, int],
+                         next_state_history: Annotated[ndarray, int],
+                         reward_history: Annotated[ndarray, float], 
+                         action_taken_history: Annotated[ndarray, int], 
+                         action_probability_history: Annotated[ndarray, float],
+                         total_time: int) -> None:
+        pass
 
     def reset(self): 
         self.q_table = np.zeros((self.n, 2, self.n, self.k))
         self.cur_learning_rate = np.full((self.n, 2, self.n, self.k), self.init_learning_rate)
         self.num_updates_q_table = np.zeros((self.n, 2, self.n, self.k))
-        if self.temperature_mode == "Boltzmann":
+        if self.schedule == "Boltzmann":
             self.cur_temp = self.max_temp
     
     def qlearning_visualize(self, gittin_history, title, save_path):

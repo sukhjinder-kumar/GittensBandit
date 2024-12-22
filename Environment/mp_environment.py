@@ -1,12 +1,14 @@
+from typing import Annotated
 import numpy as np
+from numpy import ndarray
 
 
 class Mp():  # markovian process
     def __init__(self,
-                 num_states,
-                 transition_matrix,
-                 reward_matrix,
-                 start_state):
+                 num_states: int,
+                 transition_matrix: ndarray,
+                 reward_matrix: ndarray,
+                 start_state: int):
         '''
         transition_matrix : np.array((num_states, num_states)) : tm[i][j] = Prob of going i -> j 
             Constraint: sum_j (tm[i][j]) = 1
@@ -30,7 +32,7 @@ class Mp():  # markovian process
         self.current_state = next_state
         return next_state, reward
 
-    def check_tm(self, tm):
+    def check_tm(self, tm: ndarray):
         row_sums = np.isclose(np.sum(tm, axis=1), 1)
         return np.all(row_sums)  # checks if all element of array are True
 
