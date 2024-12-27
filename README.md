@@ -63,3 +63,7 @@ Some algorithms (like Reinforce) might output a probability distribution for to-
 
 > [!Note]
 > Use `super().__init__(name, self)` to call `init` function of interface class and not rewrite that line and have one hanging instance of self.name. Maybe
+
+## Todos
+
+1. Add param definition for all methods

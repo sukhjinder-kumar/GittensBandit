@@ -138,6 +138,8 @@ class QLearning(StrategyInterface):
     def qlearning_visualize(self, gittin_history, title, save_path):
         num_runs, time_steps, num_arms, num_states_per_arm = gittin_history.shape
         
+        plt.figure(figsize=(10, 6))  # Set figure size
+
         for k in range(num_arms):
             for n in range(num_states_per_arm):
                 values = np.mean(gittin_history[:, :, k, n], axis=0)
@@ -151,12 +153,15 @@ class QLearning(StrategyInterface):
         plt.xlabel('Time')
         plt.ylabel('Gittins Index')
         plt.title(title)
-        
+         
         # Show legend
         plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), fontsize='small', title='(k,n) Pairs')
         
-        # Save fig
-        plt.savefig(save_path)
+        # Adjust layout to prevent chopping
+        plt.tight_layout()
+        
+        # Save the figure with tight bounding box
+        plt.savefig(save_path, bbox_inches='tight')
 
         # Display the plot
         plt.show()

@@ -3,13 +3,10 @@ from tqdm import tqdm
 
 from Environment.test_cases import test1, test2, test3
 from Environment.mab_environment import Mab
-from Utils.cal_optimal_rewrad import calculate_optimal_reward
-from Utils.regret_calculation import plot_regret_history_average, plot_cumm_regret_average, calculate_regret
+from Utils.cal_optimal_reward import calculate_optimal_reward, plot_regret_history_average, plot_cumm_regret_average, calculate_regret
 from Scripts.argparser_config import get_args
-from Scripts.reinforce_train import reinforce_train
-from Scripts.qlearning_train import qlearning_train
-from Scripts.neural_reinforce_train import neural_reinforce_train
 from Strategies.q_learning import QLearning
+from Strategies.reinforce import Reinforce
 
 # get argument from command line
 args = get_args()
@@ -29,44 +26,60 @@ mab = Mab(num_arms = test.num_arms,
 # Select Strategies
 strategies = []
 
-if args.strategy_name == "QLearning":
-    if mab.homogeneous:
-        num_arms = 1
-    else:
-        num_arms = test.num_arms
-
-    if args.schedule == "Boltzmann":
-        strategy = QLearning(num_arms = num_arms, 
-                            num_states_per_arm = test.num_states_per_arm,
-                            discount_factor = test.discount_factor,
-                            init_learning_rate = args.init_learning_rate,
-                            tau = args.tau,
-                            schedule = args.schedule,
-                            max_temperature = args.temperature,
-                            min_temperature = args.temperature_mode,
-                            beta = args.beta)
-    elif args.schedule == "epsilon-greedy":
-        strategy = QLearning(num_arms = num_arms, 
-                            num_states_per_arm = test.num_states_per_arm,
-                            discount_factor = test.discount_factor,
-                            init_learning_rate = args.init_learning_rate,
-                            tau = args.tau,
-                            schedule = args.schedule,
-                            epsilon_greedy = args.epsilon_greedy)
-    strategies.append(strategy)
-    gittin_history = np.zeros((args.num_runs, args.num_epochs, num_arms, test.num_states_per_arm))
-
-elif args.strategy_name == "Reinforce":
-    pass
-    # reinforce_train(args,
-    #                 mab,
-    #                 test,
-    #                 optimal_reward,
-    #                 regret_history)  # np.array are passed by reference, so regret_history need not be returned
-elif args.strategy_name == "NeuralReinforce":
-    pass
+# QLearning
+if mab.homogeneous:
+    num_arms = 1
 else:
-    pass
+    num_arms = test.num_arms
+
+if args.qlearning_schedule == "Boltzmann":
+    strategy = QLearning(num_arms = num_arms, 
+                        num_states_per_arm = test.num_states_per_arm,
+                        discount_factor = test.discount_factor,
+                        init_learning_rate = args.qlearning_init_learning_rate,
+                        tau = args.qlearning_tau,
+                        schedule = args.qlearning_schedule,
+                        max_temperature = args.qlearning_max_temperature,
+                        min_temperature = args.qlearning_min_temperature,
+                        beta = args.qlearning_beta)
+elif args.qlearning_schedule == "epsilon-greedy":
+    strategy = QLearning(num_arms = num_arms, 
+                        num_states_per_arm = test.num_states_per_arm,
+                        discount_factor = test.discount_factor,
+                        init_learning_rate = args.qlearning_init_learning_rate,
+                        tau = args.qlearning_tau,
+                        schedule = args.qlearning_schedule,
+                        epsilon_greedy = args.qlearning_epsilon_greedy)
+
+strategies.append(strategy)
+gittin_history = np.zeros((args.num_runs, args.num_epochs, num_arms, test.num_states_per_arm))
+
+# Reinforce
+if args.reinforce_schedule == "linear":
+    strategy = Reinforce(num_arms=test.num_arms,
+                        num_states_per_arm=test.num_states_per_arm,
+                        homogeneous=mab.homogeneous,
+                        discount_factor=test.discount_factor,
+                        learning_rate=args.reinforce_learning_rate,
+                        schedule=args.reinforce_schedule,
+                        max_temperature=args.reinforce_max_temperature,
+                        min_temperature=args.reinforce_min_temperature,
+                        beta=args.reinforce_beta)
+elif args.reinforce_schedule == "none":
+    strategy = Reinforce(num_arms=test.num_arms,
+                        num_states_per_arm=test.num_states_per_arm,
+                        homogeneous=mab.homogeneous,
+                        discount_factor=test.discount_factor,
+                        learning_rate=args.reinforce_learning_rate,
+                        schedule=args.reinforce_schedule,
+                        constant_temperature=args.reinforce_constant_temperature)
+
+if mab.homogeneous:
+    h_history = np.zeros((args.num_runs, args.num_epochs, mab.n))
+else:
+    h_history = np.zeros((args.num_runs, args.num_epochs, mab.k, mab.n))
+
+strategies.append(strategy)
 
 # init common variables
 optimal_reward = calculate_optimal_reward(test, mab, args.episode_len)
@@ -103,7 +116,6 @@ for idx_strategy, strategy in enumerate(strategies):
                 action_taken_history[t] = cur_action
                 action_probability_history[t] = action_probabilities
 
-            # Store gittins
             strategy.long_term_update(state_history,
                                       next_state_history,
                                       reward_history,
@@ -115,33 +127,49 @@ for idx_strategy, strategy in enumerate(strategies):
                 for k in range(num_arms):
                     for n in range(test.num_states_per_arm):
                         gittin_history[run, epoch, k, n] = strategy.q_table[n, 0, n, k]
+            
+            if strategy.name == "Reinforce":
+                h_history[run, epoch] = strategy.h.copy()
 
             # calculate regret
             regret_history[idx_strategy][run][epoch] = calculate_regret(mab, strategy, args.episode_len, optimal_reward, test.discount_factor)
             
 
-if any(strategy.name == "QLearning" for strategy in strategies):
-    if not args.not_show_gittin_plot:
-        title = f'Gittins index for num_runs={args.num_runs} and num_epochs={args.num_epochs}'
-        savepath = f'{args.savepath}/gittin_plot.png'
-        strategy.qlearning_visualize(gittin_history, title, savepath)
+for strategy in strategies:
+    if strategy.name == "QLearning":
+        if not args.qlearning_not_show_gittin_plot:
+            title = f'Gittins index for num_runs={args.num_runs} and num_epochs={args.num_epochs}'
+            savepath = f'{args.savepath}/gittin_plot.png'
+            strategy.qlearning_visualize(gittin_history, title, savepath)
+
+    if strategy.name == "Reinforce":
+        if not args.reinforce_not_show_preference_plot:
+            h_average = np.mean(h_history, axis=0)
+            title = f"Average Preference vs episode, num_epochs: {args.num_epochs} and num_runs: {args.num_runs}"
+            savepath = f"{args.savepath}/preference_plot.png"
+            strategy.visualize_h_average(h_average=h_average,
+                                        title=title,
+                                        savepath=savepath)
 
 # Plot regret history
 regret_history_average = np.mean(regret_history, axis=1)  # shape: (len(strategies), num_episodes)
 if not args.not_show_regret_average_plot:
     regret_savepath = f'{args.savepath}/regret_plot.png'
     plot_regret_history_average(regret_history_average,
+                                strategies,
                                 title=f"Average regret with num_runs={args.num_runs} and episode_len={args.episode_len}",
                                 savepath=regret_savepath)
 
 # Plot cumm regret
 if not args.not_show_cumm_regret_average_plot:
-    cumm_regret_counter = 0
-    for epoch in range(args.num_epochs):
-        cumm_regret_counter += regret_history_average[epoch]
-        avg_cumm_regret[epoch] = cumm_regret_counter
+    for i in range(len(strategies)):
+        cumm_regret_counter = 0
+        for epoch in range(args.num_epochs):
+            cumm_regret_counter += regret_history_average[i][epoch]
+            avg_cumm_regret[i][epoch] = cumm_regret_counter
 
     cumm_regret_savepath = f'{args.savepath}/cumm_regret_plot.png'
     plot_cumm_regret_average(avg_cumm_regret,
+                             strategies,
                              title=f"Average cumm regret with num_runs={args.num_runs} and episode_len={args.episode_len}",
                              savepath=cumm_regret_savepath)
