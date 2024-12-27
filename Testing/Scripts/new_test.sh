@@ -7,19 +7,19 @@ episode_len=20
 # QLearning
 qlearning_init_learning_rate=0.05
 qlearning_tau=300
-qlearning_schedule="Boltzmann"  # Or "epsilon-greedy"
+qlearning_schedule="epsilon-greedy"  # Or "Boltzmann"
 qlearning_max_temperature=200
 qlearning_min_temperature=0.5
 qlearning_beta=0.992
-# qlearning_epsilon_greedy=0.1
+qlearning_epsilon_greedy=0.1
 
 # Reinforce
 reinforce_learning_rate=0.001
-reinforce_schedule="linear"  # or "none"
+reinforce_schedule="none"  # or "linear"
 reinforce_max_temperature=200
 reinforce_min_temperature=0.5
 reinforce_beta=0.992
-# reinforce_constant_temperature=1
+reinforce_constant_temperature=1
 
 # Function to convert seconds to MM:SS format
 convert_to_mmss() {
@@ -31,9 +31,6 @@ convert_to_mmss() {
 echo "Starting" 
 start_time=$(date +%s)  # Record start time
 
-# --qlearning_epsilon_greedy=${qlearning_epsilon_greedy} \
-# --reinforce_constant_temperature=${reinforce_constant_temperature} \
-
 python3 -m Scripts.main test3 \
         --num_runs=${num_runs} \
         --num_epochs=${num_epochs} \
@@ -44,11 +41,13 @@ python3 -m Scripts.main test3 \
         --qlearning_max_temperature=${qlearning_max_temperature} \
         --qlearning_min_temperature=${qlearning_min_temperature} \
         --qlearning_beta=${qlearning_beta} \
+        --qlearning_epsilon_greedy=${qlearning_epsilon_greedy} \
         --reinforce_learning_rate=${reinforce_learning_rate} \
         --reinforce_schedule=${reinforce_schedule} \
         --reinforce_max_temperature=${reinforce_max_temperature} \
         --reinforce_min_temperature=${reinforce_min_temperature} \
         --reinforce_beta=${reinforce_beta} \
+        --reinforce_constant_temperature=${reinforce_constant_temperature} \
 
 end_time=$(date +%s)  # Record end time
 duration=$((end_time - start_time))  # Calculate duration in seconds

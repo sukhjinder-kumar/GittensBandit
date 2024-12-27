@@ -48,8 +48,6 @@ class QLearning(StrategyInterface):
             self.epsilon_greedy = epsilon_greedy  # probability of picking action at random
 
     def get_action(self, cur_state: Annotated[ndarray, int]) -> tuple[int, Annotated[ndarray, float]]:
-        action_probabilities = np.zeros((self.k))
-
         if self.schedule == "Boltzmann":
             # Calculate the Boltzmann distribution for action selection based on current estimate of gittins index
             action_probabilities = np.zeros((self.k))
@@ -59,7 +57,7 @@ class QLearning(StrategyInterface):
             for i in range(self.k):
                 action_probabilities[i] = np.exp(self.q_table[cur_state[i], 0, cur_state[i], i] / self.cur_temp) / total
                 
-        elif self.schedule == "epsilon-greedy-gittin":
+        elif self.schedule == "epsilon-greedy":
             # With 1-epsilon probability pick the arm with the state that has highest gitten value
             # ,And with prob epsilon pick randomly
             cur_gittens = np.array([self.q_table[cur_state[i], 0, cur_state[i], i] for i in range(self.k)])

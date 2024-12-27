@@ -36,21 +36,15 @@ def get_args():
 
     allowed_schedule = ["Boltzmann", "epsilon-greedy"]
     parser.add_argument('--qlearning_schedule', type=str, choices=allowed_schedule,
-                        help="schedule for qlearning algorithm", default="epsilon-greedy-gittin")
-
-    args_, remaining_argv_ = parser.parse_known_args()
-
-    if args_.qlearning_schedule == "Boltzmann":
-        parser.add_argument('--qlearning_max_temperature', type=float, 
-                            help="max temperature for qlearning algorithm", default=200)
-        parser.add_argument('--qlearning_min_temperature', type=float, 
-                            help="min temperature for qlearning algorithm", default=0.5)
-        parser.add_argument('--qlearning_beta', type=float, 
-                            help="beta for Boltzmann schedule for qlearning algorithm", default=0.992)
-
-    if args_.qlearning_schedule == "epsilon-greedy":
-        parser.add_argument('--qlearning_epsilon_greedy', type=float,
-                            help="epsilon for epsilon greedy schedule", default=0.1)
+                        help="schedule for qlearning algorithm", default="epsilon-greedy")
+    parser.add_argument('--qlearning_max_temperature', type=float, 
+                        help="max temperature for qlearning algorithm", default=200)
+    parser.add_argument('--qlearning_min_temperature', type=float, 
+                        help="min temperature for qlearning algorithm", default=0.5)
+    parser.add_argument('--qlearning_beta', type=float, 
+                        help="beta for Boltzmann schedule for qlearning algorithm", default=0.992)
+    parser.add_argument('--qlearning_epsilon_greedy', type=float,
+                        help="epsilon for epsilon greedy schedule", default=0.1)
 
     # Reinforce Algorithm
     parser.add_argument('--reinforce_learning_rate', type=float,
@@ -59,19 +53,14 @@ def get_args():
     parser.add_argument('--reinforce_schedule', type=str, choices=allowed_schedules,
                         help="schedule for temperature in reinforce algorithm", default="linear")
 
-    args_, remaining_argv_ = parser.parse_known_args()
-
-    if args_.reinforce_schedule == "linear":
-        parser.add_argument('--reinforce_max_temperature', type=float, 
-                            help="max temperature for reinforce algorithm", default=200)
-        parser.add_argument('--reinforce_min_temperature', type=float, 
-                            help="min temperature for reinforce algorithm", default=0.5)
-        parser.add_argument('--reinforce_beta', type=float, 
-                            help="beta for Boltzmann schedule for reinforce algorithm", default=0.992)
-
-    if args_.reinforce_schedule == "none":
-        parser.add_argument('--reinforce_constant_temperature', type=float, 
-                            help="constant temperature for reinforce algorithm", default=1)
+    parser.add_argument('--reinforce_max_temperature', type=float, 
+                        help="max temperature for reinforce algorithm", default=200)
+    parser.add_argument('--reinforce_min_temperature', type=float, 
+                        help="min temperature for reinforce algorithm", default=0.5)
+    parser.add_argument('--reinforce_beta', type=float, 
+                        help="beta for Boltzmann schedule for reinforce algorithm", default=0.992)
+    parser.add_argument('--reinforce_constant_temperature', type=float, 
+                        help="constant temperature for reinforce algorithm", default=1)
 
     parser.add_argument('--reinforce_not_show_preference_plot', action='store_true', 
                         help="include to not show the preference plot")
