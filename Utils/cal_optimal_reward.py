@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def calculate_optimal_reward(test, mab, episode_len):
     num_runs = 100
-    optimal_reward = np.zeros((num_runs))
+    optimal_reward = np.zeros((num_runs), dtype=float)
     for run in range(num_runs):    
         mab.reset(random=False)
         for t in range(episode_len):
@@ -16,19 +16,16 @@ def calculate_optimal_reward(test, mab, episode_len):
 
     return np.mean(optimal_reward, axis=0)
 
-def calculate_regret(mab, strategy, episode_len, optimal_reward, discount_factor):
-    num_runs = 100
-    cumm_reward = np.zeros((num_runs))
-    for run in range(num_runs):
-        mab.reset(random=False)
-        for t in range(episode_len):
-            cur_state = mab.get_cur_state()
-            action, action_probability = strategy.get_action(cur_state)
-            _, reward = mab.step(action)
-            cumm_reward[run] += (discount_factor**t) * reward
+def calculate_cumm_reward(strategy, test, mab, episode_len):
+    cumm_reward = 0
+    mab.reset(random=False)
+    for t in range(episode_len):
+        cur_state = mab.get_cur_state()
+        action, action_probability = strategy.get_action(cur_state)
+        _, reward = mab.step(action)
+        cumm_reward += (test.discount_factor**t) * reward
 
-    regret = np.mean(cumm_reward, axis=0) - optimal_reward
-    return regret
+    return cumm_reward
 
 def plot_regret_history_average(regret_history_average: Annotated[ndarray, float],
                                 strategies: list,

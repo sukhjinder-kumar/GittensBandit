@@ -13,6 +13,8 @@
 > [!WARNING]
 > Please note that `torch` is installed for macos not linux.
 
+4. Run the `new_test.sh` file from base folder as `./Testing/new_test.sh`. Modify the file to edit params.
+
 ## Code Rules
 
 1. Use CamelCase for class names only and for anything else use snake_case.

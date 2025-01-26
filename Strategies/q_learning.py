@@ -17,9 +17,10 @@ class QLearning(StrategyInterface):
                  max_temperature=None,
                  min_temperature=None,
                  beta=None,
-                 epsilon_greedy=None):
+                 epsilon_greedy=None,
+                 name="QLearning"):
 
-        super().__init__("QLearning")
+        super().__init__(name)
 
         self.k = num_arms  # Number of arms (tasks)
         self.n = num_states_per_arm  # Number of states per task

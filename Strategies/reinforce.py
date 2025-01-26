@@ -16,8 +16,9 @@ class Reinforce(StrategyInterface):
                  constant_temperature=None,
                  max_temperature=None,
                  min_temperature=None,
-                 beta=None):
-        super().__init__("Reinforce")
+                 beta=None,
+                 name="Reinforce"):
+        super().__init__(name)
         self.k = num_arms
         self.n = num_states_per_arm
         self.discount_factor = discount_factor
@@ -83,7 +84,7 @@ class Reinforce(StrategyInterface):
         # track cummulative reward
         cumm_reward_history = np.zeros((total_time), dtype=float)
         counter = 0
-        for t in range(total_time):
+        for t in reversed(range(total_time)):
             counter = reward_history[t] + self.discount_factor * counter
             cumm_reward_history[t] = counter
 

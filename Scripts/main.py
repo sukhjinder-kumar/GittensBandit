@@ -1,9 +1,9 @@
 import numpy as np
 from tqdm import tqdm
 
-from Environment.test_cases import test1, test2, test3
+from Environment.test_cases import test1, test2, test3, test4, test5
 from Environment.mab_environment import Mab
-from Utils.cal_optimal_reward import calculate_optimal_reward, plot_regret_history_average, plot_cumm_regret_average, calculate_regret
+from Utils.cal_optimal_reward import calculate_optimal_reward, plot_regret_history_average, plot_cumm_regret_average, calculate_cumm_reward
 from Scripts.argparser_config import get_args
 from Strategies.q_learning import QLearning
 from Strategies.reinforce import Reinforce
@@ -54,32 +54,38 @@ elif args.qlearning_schedule == "epsilon-greedy":
 strategies.append(strategy)
 gittin_history = np.zeros((args.num_runs, args.num_epochs, num_arms, test.num_states_per_arm))
 
-# Reinforce
-if args.reinforce_schedule == "linear":
-    strategy = Reinforce(num_arms=test.num_arms,
-                        num_states_per_arm=test.num_states_per_arm,
-                        homogeneous=mab.homogeneous,
-                        discount_factor=test.discount_factor,
-                        learning_rate=args.reinforce_learning_rate,
-                        schedule=args.reinforce_schedule,
-                        max_temperature=args.reinforce_max_temperature,
-                        min_temperature=args.reinforce_min_temperature,
-                        beta=args.reinforce_beta)
-elif args.reinforce_schedule == "none":
-    strategy = Reinforce(num_arms=test.num_arms,
-                        num_states_per_arm=test.num_states_per_arm,
-                        homogeneous=mab.homogeneous,
-                        discount_factor=test.discount_factor,
-                        learning_rate=args.reinforce_learning_rate,
-                        schedule=args.reinforce_schedule,
-                        constant_temperature=args.reinforce_constant_temperature)
+# Reinforce with linear and none schedule
+strategy = Reinforce(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="linear",
+                    max_temperature=args.reinforce_max_temperature,
+                    min_temperature=args.reinforce_min_temperature,
+                    beta=args.reinforce_beta,
+                    name="Reinforce_Linear")
+strategies.append(strategy)
+
+strategy = Reinforce(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="none",
+                    constant_temperature=args.reinforce_constant_temperature,
+                    name="Reinforce_None")
+strategies.append(strategy)
 
 if mab.homogeneous:
-    h_history = np.zeros((args.num_runs, args.num_epochs, mab.n))
+    h_history_linear = np.zeros((args.num_runs, args.num_epochs, mab.n))
+    h_history_none = np.zeros((args.num_runs, args.num_epochs, mab.n))
 else:
-    h_history = np.zeros((args.num_runs, args.num_epochs, mab.k, mab.n))
+    h_history_linear = np.zeros((args.num_runs, args.num_epochs, mab.k, mab.n))
+    h_history_none = np.zeros((args.num_runs, args.num_epochs, mab.k, mab.n))
 
-strategies.append(strategy)
+# Other Strategies
+# ...
 
 # init common variables
 optimal_reward = calculate_optimal_reward(test, mab, args.episode_len)
@@ -88,7 +94,7 @@ avg_cumm_regret = np.zeros((len(strategies), args.num_epochs))
 
 # Main Logic
 for idx_strategy, strategy in enumerate(strategies):
-    for run in tqdm(range(args.num_runs), unit=" #Run"):
+    for run in tqdm(range(args.num_runs), unit=f" #{strategy.name}-Run"):
         strategy.reset()
         for epoch in range(args.num_epochs):
             mab.reset(random=True)
@@ -123,17 +129,20 @@ for idx_strategy, strategy in enumerate(strategies):
                                       action_probability_history,
                                       args.episode_len)
 
-            if strategy.name == "QLearning":
+            if strategy.name == "QLearning" and not args.qlearning_not_show_gittin_plot:
                 for k in range(num_arms):
                     for n in range(test.num_states_per_arm):
                         gittin_history[run, epoch, k, n] = strategy.q_table[n, 0, n, k]
             
-            if strategy.name == "Reinforce":
-                h_history[run, epoch] = strategy.h.copy()
+            if strategy.name == "Reinforce_Linear" and not args.reinforce_not_show_preference_plot:
+                h_history_linear[run, epoch] = strategy.h.copy()
+
+            if strategy.name == "Reinforce_None" and not args.reinforce_not_show_preference_plot:
+                h_history_none[run, epoch] = strategy.h.copy()
 
             # calculate regret
-            regret_history[idx_strategy][run][epoch] = calculate_regret(mab, strategy, args.episode_len, optimal_reward, test.discount_factor)
-            
+            if not args.not_show_regret_average_plot:
+                regret_history[idx_strategy][run][epoch] = calculate_cumm_reward(strategy, test, mab, args.episode_len) - optimal_reward
 
 for strategy in strategies:
     if strategy.name == "QLearning":
@@ -142,11 +151,20 @@ for strategy in strategies:
             savepath = f'{args.savepath}/gittin_plot.png'
             strategy.qlearning_visualize(gittin_history, title, savepath)
 
-    if strategy.name == "Reinforce":
+    if strategy.name == "Reinforce_Linear":
         if not args.reinforce_not_show_preference_plot:
-            h_average = np.mean(h_history, axis=0)
-            title = f"Average Preference vs episode, num_epochs: {args.num_epochs} and num_runs: {args.num_runs}"
-            savepath = f"{args.savepath}/preference_plot.png"
+            h_average = np.mean(h_history_linear, axis=0)
+            title = f"Reinforce (Linear): Preference vs episode, num_epochs: {args.num_epochs} and num_runs: {args.num_runs}"
+            savepath = f"{args.savepath}/linear_preference_plot.png"
+            strategy.visualize_h_average(h_average=h_average,
+                                        title=title,
+                                        savepath=savepath)
+
+    if strategy.name == "Reinforce_None":
+        if not args.reinforce_not_show_preference_plot:
+            h_average = np.mean(h_history_none, axis=0)
+            title = f"Reinforce (None): Average Preference vs episode, num_epochs: {args.num_epochs} and num_runs: {args.num_runs}"
+            savepath = f"{args.savepath}/none_preference_plot.png"
             strategy.visualize_h_average(h_average=h_average,
                                         title=title,
                                         savepath=savepath)

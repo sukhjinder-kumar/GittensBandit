@@ -14,7 +14,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Arguments parser for Gittin Bandit code.")
     
     # Positional arguments (required)
-    allowed_tests = ["test1", "test2", "test3"]
+    allowed_tests = ["test1", "test2", "test3", "test4", "test5"]
     parser.add_argument('test_name', type=str, choices=allowed_tests, help="test name")
 
     # Common Parameters
