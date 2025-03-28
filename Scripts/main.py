@@ -3,6 +3,8 @@ from tqdm import tqdm
 
 from Environment.test_cases import test1, test2, test3, test4, test5
 from Environment.mab_environment import Mab
+from Strategies.reinforce_with_adam import ReinforceWithAdam
+from Strategies.reinforce_with_momentum import ReinforceWithMomentum
 from Utils.cal_optimal_reward import calculate_optimal_reward, plot_regret_history_average, plot_cumm_regret_average, calculate_cumm_reward
 from Scripts.argparser_config import get_args
 from Strategies.q_learning import QLearning
@@ -32,26 +34,26 @@ if mab.homogeneous:
 else:
     num_arms = test.num_arms
 
-if args.qlearning_schedule == "Boltzmann":
-    strategy = QLearning(num_arms = num_arms, 
-                        num_states_per_arm = test.num_states_per_arm,
-                        discount_factor = test.discount_factor,
-                        init_learning_rate = args.qlearning_init_learning_rate,
-                        tau = args.qlearning_tau,
-                        schedule = args.qlearning_schedule,
-                        max_temperature = args.qlearning_max_temperature,
-                        min_temperature = args.qlearning_min_temperature,
-                        beta = args.qlearning_beta)
-elif args.qlearning_schedule == "epsilon-greedy":
-    strategy = QLearning(num_arms = num_arms, 
-                        num_states_per_arm = test.num_states_per_arm,
-                        discount_factor = test.discount_factor,
-                        init_learning_rate = args.qlearning_init_learning_rate,
-                        tau = args.qlearning_tau,
-                        schedule = args.qlearning_schedule,
-                        epsilon_greedy = args.qlearning_epsilon_greedy)
+# if args.qlearning_schedule == "Boltzmann":
+#     strategy = QLearning(num_arms = num_arms, 
+#                         num_states_per_arm = test.num_states_per_arm,
+#                         discount_factor = test.discount_factor,
+#                         init_learning_rate = args.qlearning_init_learning_rate,
+#                         tau = args.qlearning_tau,
+#                         schedule = args.qlearning_schedule,
+#                         max_temperature = args.qlearning_max_temperature,
+#                         min_temperature = args.qlearning_min_temperature,
+#                         beta = args.qlearning_beta)
+# elif args.qlearning_schedule == "epsilon-greedy":
+#     strategy = QLearning(num_arms = num_arms, 
+#                         num_states_per_arm = test.num_states_per_arm,
+#                         discount_factor = test.discount_factor,
+#                         init_learning_rate = args.qlearning_init_learning_rate,
+#                         tau = args.qlearning_tau,
+#                         schedule = args.qlearning_schedule,
+#                         epsilon_greedy = args.qlearning_epsilon_greedy)
 
-strategies.append(strategy)
+# strategies.append(strategy)
 gittin_history = np.zeros((args.num_runs, args.num_epochs, num_arms, test.num_states_per_arm))
 
 # Reinforce with linear and none schedule
@@ -68,6 +70,52 @@ strategy = Reinforce(num_arms=test.num_arms,
 strategies.append(strategy)
 
 strategy = Reinforce(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="none",
+                    constant_temperature=args.reinforce_constant_temperature,
+                    name="Reinforce_None")
+strategies.append(strategy)
+
+# Reinforce with momentum with linear and none schedule
+strategy = ReinforceWithMomentum(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="linear",
+                    max_temperature=args.reinforce_max_temperature,
+                    min_temperature=args.reinforce_min_temperature,
+                    beta=args.reinforce_beta,
+                    name="Reinforce_Linear")
+strategies.append(strategy)
+
+strategy = ReinforceWithMomentum(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="none",
+                    constant_temperature=args.reinforce_constant_temperature,
+                    name="Reinforce_None")
+strategies.append(strategy)
+
+# Reinforce with adam with linear and none schedule
+strategy = ReinforceWithAdam(num_arms=test.num_arms,
+                    num_states_per_arm=test.num_states_per_arm,
+                    homogeneous=mab.homogeneous,
+                    discount_factor=test.discount_factor,
+                    learning_rate=args.reinforce_learning_rate,
+                    schedule="linear",
+                    max_temperature=args.reinforce_max_temperature,
+                    min_temperature=args.reinforce_min_temperature,
+                    beta=args.reinforce_beta,
+                    name="Reinforce_Linear")
+strategies.append(strategy)
+
+strategy = ReinforceWithAdam(num_arms=test.num_arms,
                     num_states_per_arm=test.num_states_per_arm,
                     homogeneous=mab.homogeneous,
                     discount_factor=test.discount_factor,
